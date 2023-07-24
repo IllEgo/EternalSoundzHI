@@ -1,0 +1,188 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Selection</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    .service-tile {
+      cursor: pointer;
+      padding: 20px;
+      text-align: center;
+      background-color: #f5f5f5;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .service-tile:hover {
+      background-color: #e0e0e0;
+    }
+
+    .masthead {
+      padding: 20px;
+      background-color: #333;
+      color: #fff;
+    }
+
+    .masthead h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+  .tile {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 15px;
+        width: 300px; /* Adjust the width as needed */
+        height: 200x; /* Adjust the height as needed */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .tile img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+
+    .tile input[type="radio"] {
+        display: none;
+    }
+
+    .tile.selected {
+        background-color: #ccc;
+    }
+
+  </style>
+     <script>
+        function selectTile(tileId, packageType, packageId, packageName, packagePrice) {
+        const tile = document.getElementById(tileId);
+        const radio = tile.querySelector('input[type="radio"]');
+        const tiles = document.querySelectorAll('.tile');
+
+        tiles.forEach((t) => {
+            if (t.classList.contains(packageType)) {
+                t.classList.remove('selected');
+                const radioBtn = t.querySelector('input[type="radio"]');
+                if (radioBtn) {
+                    radioBtn.checked = false;
+                }
+            }
+        });
+
+        tile.classList.add('selected');
+        if (radio) {
+            radio.checked = true;
+        }
+
+        // Update the form fields with the selected package
+        const form = document.getElementById('booking-form');
+        const packageField = form.querySelector(`input[name="${packageType}"]`);
+        if (packageField) {
+            packageField.value = packageId;
+        }
+
+        const packageNameField = form.querySelector(`#selected_${packageType}_name`);
+        if (packageNameField) {
+            packageNameField.innerText = packageName;
+        }
+
+        const packagePriceField = form.querySelector(`#selected_${packageType}_price`);
+        if (packagePriceField) {
+            packagePriceField.innerText = `$${packagePrice}`;
+        }
+    }
+    </script>
+</head>
+
+<body>
+<!--   <nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark" id="mainNav">-->
+<!--    <div class="container">-->
+<!--        <a class="navbar-brand" href="#page-top"><img src="{% static 'bookings/assets/img/navbar-logo.svg' %}" alt="..." /></a>-->
+<!--        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--            Menu-->
+<!--            <i class="fas fa-bars ms-1"></i>-->
+<!--        </button>-->
+<!--        <div class="collapse navbar-collapse" id="navbarResponsive">-->
+<!--            <ul class="navbar-nav text-uppercase ms-auto py-4 py-lg-0">-->
+<!--                <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#portfolio">Portfolio</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#about">About</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#team">Team</a></li>-->
+<!--                <li class="nav-item"><a class="nav-link" href="#contact">Book Event</a></li>-->
+<!--            </ul>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</nav>-->
+
+
+<div class="container">
+        <h1>Book Event</h1>
+
+        <h4>Select a sound package</h4>
+        <div class="row">
+            {% for sound_package in sound_packages %}
+                <div id="sound_package_{{ sound_package.id }}" class="tile sound-package-tile" onclick="selectTile('sound_package_{{ sound_package.id }}', 'sound-package-tile')">
+                    {% if sound_package.image %}
+                        <img src="{{ sound_package.image.url }}" alt="Sound Package Image">
+                    {% else %}
+                        No image available
+                    {% endif %}
+                    <input type="radio" id="radio_sound_package_{{ sound_package.id }}" id="radio_sound_package_{{ sound_package.id }}" name="sound_package" value="{{ sound_package.id }}">
+                    <h5 class="card-title">{{ sound_package.name }}</h5>
+                    <p class="card-text">{{ sound_package.description }}</p>
+                    <p class="card-text">Price: ${{ sound_package.price }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h4>Select a light package</h4>
+        <div class="row">
+            {% for light_package in light_packages %}
+                <div id="light_package_{{ light_package.id }}" class="tile light-package-tile" onclick="selectTile('light_package_{{ light_package.id }}', 'light-package-tile')">
+                    {% if light_package.image %}
+                        <img src="{{ light_package.image.url }}" alt="Light Package Image">
+                    {% else %}
+                        No image available
+                    {% endif %}
+                    <input type="radio" id="radio_light_package_{{ light_package.id }}" id="radio_light_package_{{ light_package.id }}" name="light_package" value="{{ light_package.id }}">
+                    <h5 class="card-title">{{ light_package.name }}</h5>
+                    <p class="card-text">{{ light_package.description }}</p>
+                    <p class="card-text">Price: ${{ light_package.price }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <h2>Booking Form</h2>
+        <form id="booking-form" action="/submit_booking" method="post">
+            {% csrf_token %}
+            <input name="event_start" value="{{ event_start }}">
+            <input name="event_end" value="{{ event_end }}">
+            <input name="event_location" value="{{ event_location }}">
+            <input name="event_type" value="{{ event_type }}">
+            <input name="event_details" value="{{ event_details }}">
+            <input name="total_price" value="{{ total_price }}">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
